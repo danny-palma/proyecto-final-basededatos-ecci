@@ -174,6 +174,10 @@ export default function NotesApp() {
   };
 
   const handleOpenDialog = (note?: Note) => {
+    // Cerrar el menú antes de abrir el diálogo
+    setAnchorEl(null);
+    setSelectedNote(null);
+    
     if (note) {
       setEditingNote(note);
       setTitle(note.title);
@@ -202,6 +206,9 @@ export default function NotesApp() {
     setTags([]);
     setIsFavorite(false);
     setError('');
+    // Cerrar el menú si está abierto
+    setAnchorEl(null);
+    setSelectedNote(null);
   };
 
   const handleSaveNote = async () => {
@@ -451,12 +458,18 @@ export default function NotesApp() {
                           size="small"
                           onClick={() => handleToggleFavorite(note)}
                           sx={{ mr: 0.5 }}
+                          aria-label={note.isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
                         >
                           {note.isFavorite ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
                         </IconButton>
                         <IconButton
+                          id="note-options-button"
                           size="small"
                           onClick={(e) => handleMenuClick(e, note)}
+                          aria-label="Opciones de la nota"
+                          aria-controls={anchorEl ? 'note-options-menu' : undefined}
+                          aria-haspopup="true"
+                          aria-expanded={anchorEl ? 'true' : undefined}
                         >
                           <MoreVertIcon />
                         </IconButton>
@@ -516,7 +529,7 @@ export default function NotesApp() {
 
         <Fab
           color="primary"
-          aria-label="add"
+          aria-label="Crear nueva nota"
           sx={{ position: 'fixed', bottom: 16, right: 16 }}
           onClick={() => handleOpenDialog()}
         >
@@ -526,9 +539,15 @@ export default function NotesApp() {
 
       {/* Menu contextual */}
       <Menu
+        id="note-options-menu"
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleCloseMenu}
+        MenuListProps={{
+          'aria-labelledby': 'note-options-button',
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={() => {
           if (selectedNote) {
@@ -562,11 +581,27 @@ export default function NotesApp() {
       </Menu>
 
       {/* Dialog para crear/editar notas */}
-      <Dialog open={open} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle>
+      <Dialog 
+        open={open} 
+        onClose={handleCloseDialog} 
+        maxWidth="md" 
+        fullWidth
+        aria-labelledby="note-dialog-title"
+        aria-describedby="note-dialog-description"
+        keepMounted={false}
+        disableEnforceFocus={false}
+        disableAutoFocus={false}
+        disableRestoreFocus={false}
+        hideBackdrop={false}
+        PaperProps={{
+          'aria-modal': 'true',
+          role: 'dialog'
+        }}
+      >
+        <DialogTitle id="note-dialog-title">
           {editingNote ? 'Editar Nota' : 'Nueva Nota'}
         </DialogTitle>
-        <DialogContent>
+        <DialogContent id="note-dialog-description">
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           
           <TextField
