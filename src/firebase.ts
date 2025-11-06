@@ -2,6 +2,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAB5wpLeg3NiuklxUhv0G3heOS-O_DhCDU",
@@ -15,6 +16,31 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialize App Check
+if (typeof window !== 'undefined') {
+  // Solo inicializar App Check en el navegador
+  try {
+    // Para desarrollo: usar debug token específico
+    if (import.meta.env.DEV || window.location.hostname === 'localhost') {
+      // Debug token para desarrollo
+      (globalThis as any).FIREBASE_APPCHECK_DEBUG_TOKEN = '3FC81B62-E7AF-4578-ACEC-170CF9A33D02';
+      console.log('App Check: Usando debug token para desarrollo');
+    } else {
+      // Inicializar App Check con ReCaptcha v3 solo en producción
+      const appCheck = initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(
+          import.meta.env.VITE_FIREBASE_RECAPTCHA_V3_SITE_KEY || '6LcG8wMsAAAAAOHGt00JjWrp_oIsUazEtCM75o8a'
+        ),
+        isTokenAutoRefreshEnabled: true
+      });
+      console.log('App Check inicializado correctamente con ReCaptcha v3');
+    }
+  } catch (error) {
+    console.warn('Error al inicializar App Check:', error);
+    console.warn('La aplicación funcionará sin App Check por ahora');
+  }
+}
 
 // Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app);

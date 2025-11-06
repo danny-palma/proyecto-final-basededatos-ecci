@@ -5,6 +5,9 @@ export interface Note {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
+  categories?: string[];
+  tags?: string[];
+  isFavorite?: boolean;
 }
 
 export interface User {
