@@ -47,19 +47,8 @@ export default function NoteCard({
         border: note.isFavorite ? '2px solid #f50057' : 'none',
         position: 'relative'
       }}>
-        {note.isFavorite && (
-          <FavoriteIcon
-            sx={{
-              position: 'absolute',
-              top: 8,
-              left: 8,
-              color: '#f50057',
-              zIndex: 1
-            }}
-          />
-        )}
 
-        <CardContent sx={{ flexGrow: 1, pt: note.isFavorite ? 5 : 2 }}>
+        <CardContent sx={{ flexGrow: 1, pt: 2 }}>
           <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={1}>
             <Typography
               variant="h6"
