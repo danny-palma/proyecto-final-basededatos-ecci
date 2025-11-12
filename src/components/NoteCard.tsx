@@ -40,31 +40,42 @@ export default function NoteCard({
 
   return (
     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-      <Card sx={{ 
-        height: '100%', 
-        display: 'flex', 
+      <Card sx={{
+        height: '100%',
+        display: 'flex',
         flexDirection: 'column',
         border: note.isFavorite ? '2px solid #f50057' : 'none',
         position: 'relative'
       }}>
         {note.isFavorite && (
-          <FavoriteIcon 
-            sx={{ 
-              position: 'absolute', 
-              top: 8, 
-              left: 8, 
+          <FavoriteIcon
+            sx={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
               color: '#f50057',
               zIndex: 1
-            }} 
+            }}
           />
         )}
-        
+
         <CardContent sx={{ flexGrow: 1, pt: note.isFavorite ? 5 : 2 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-            <Typography variant="h6" component="h2" gutterBottom>
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={1}>
+            <Typography
+              variant="h6"
+              component="h2"
+              gutterBottom
+              sx={{
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                hyphens: 'auto',
+                flex: 1,
+                minWidth: 0
+              }}
+            >
               {note.title}
             </Typography>
-            <Box>
+            <Box sx={{ flexShrink: 0 }}>
               <IconButton
                 size="small"
                 onClick={() => onToggleFavorite(note)}
@@ -82,13 +93,22 @@ export default function NoteCard({
               </IconButton>
             </Box>
           </Box>
-          
-          <Typography variant="body2" color="textSecondary" paragraph>
+
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            paragraph
+            sx={{
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              hyphens: 'auto'
+            }}
+          >
             {note.content.length > 100
               ? note.content.substring(0, 100) + '...'
               : note.content}
           </Typography>
-          
+
           {/* Categorías */}
           {note.categories && note.categories.length > 0 && (
             <Box sx={{ mb: 1 }}>
@@ -105,7 +125,7 @@ export default function NoteCard({
               ))}
             </Box>
           )}
-          
+
           {/* Tags */}
           {note.tags && note.tags.length > 0 && (
             <Box sx={{ mb: 1 }}>
@@ -122,7 +142,7 @@ export default function NoteCard({
               ))}
             </Box>
           )}
-          
+
           <Divider sx={{ my: 1 }} />
           <Typography variant="caption" color="textSecondary">
             Actualizada: {formatDate(note.updatedAt)}

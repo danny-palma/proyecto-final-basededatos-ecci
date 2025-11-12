@@ -12,7 +12,8 @@ import {
   FormControlLabel,
   Switch,
   InputAdornment,
-  Box
+  Box,
+  Typography
 } from '@mui/material';
 import {
   Category as CategoryIcon,
@@ -20,6 +21,10 @@ import {
   Favorite as FavoriteIcon
 } from '@mui/icons-material';
 import type { Note } from '../types';
+
+// Límites de caracteres
+const TITLE_MAX_LENGTH = 100;
+const CONTENT_MAX_LENGTH = 5000;
 
 interface NoteDialogProps {
   open: boolean;
@@ -75,16 +80,65 @@ export default function NoteDialog({
       disableAutoFocus={false}
       disableRestoreFocus={false}
       hideBackdrop={false}
+      scroll="paper"
       PaperProps={{
         'aria-modal': 'true',
-        role: 'dialog'
+        role: 'dialog',
+        sx: {
+          maxHeight: '90vh',
+          margin: '16px',
+          width: 'calc(100% - 32px)',
+          '@media (max-width: 600px)': {
+            margin: '8px',
+            width: 'calc(100% - 16px)'
+          }
+        }
       }}
     >
       <DialogTitle id="note-dialog-title">
-        {editingNote ? 'Editar Nota' : 'Nueva Nota'}
+        <Typography 
+          variant="h6" 
+          component="h2"
+          sx={{
+            wordWrap: 'break-word',
+            wordBreak: 'break-word',
+            whiteSpace: 'pre-wrap',
+            lineHeight: 1.4
+          }}
+        >
+          {editingNote ? 'Editar Nota' : 'Nueva Nota'}
+        </Typography>
       </DialogTitle>
-      <DialogContent id="note-dialog-description">
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      <DialogContent 
+        id="note-dialog-description"
+        sx={{
+          paddingTop: 2,
+          paddingBottom: 1,
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': {
+            width: '8px'
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'rgba(0,0,0,0.1)'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(0,0,0,0.3)',
+            borderRadius: '4px'
+          }
+        }}
+      >
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 2,
+              wordWrap: 'break-word',
+              wordBreak: 'break-word'
+            }}
+          >
+            {error}
+          </Alert>
+        )}
         
         <TextField
           autoFocus
@@ -94,7 +148,25 @@ export default function NoteDialog({
           variant="outlined"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          sx={{ mb: 2 }}
+          inputProps={{ 
+            maxLength: TITLE_MAX_LENGTH,
+            style: { 
+              wordWrap: 'break-word',
+              wordBreak: 'break-word',
+              whiteSpace: 'pre-wrap'
+            }
+          }}
+          helperText={`${title.length}/${TITLE_MAX_LENGTH} caracteres`}
+          error={title.length > TITLE_MAX_LENGTH}
+          sx={{ 
+            mb: 2,
+            '& .MuiInputBase-input': {
+              wordWrap: 'break-word',
+              wordBreak: 'break-word',
+              whiteSpace: 'pre-wrap',
+              lineHeight: 1.5
+            }
+          }}
         />
         
         <TextField
@@ -102,11 +174,34 @@ export default function NoteDialog({
           label="Contenido"
           fullWidth
           multiline
-          rows={6}
+          rows={8}
           variant="outlined"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          sx={{ mb: 2 }}
+          inputProps={{ 
+            maxLength: CONTENT_MAX_LENGTH,
+            style: { 
+              wordWrap: 'break-word',
+              wordBreak: 'break-word',
+              whiteSpace: 'pre-wrap',
+              lineHeight: 1.6
+            }
+          }}
+          helperText={`${content.length}/${CONTENT_MAX_LENGTH} caracteres`}
+          error={content.length > CONTENT_MAX_LENGTH}
+          sx={{ 
+            mb: 2,
+            '& .MuiInputBase-input': {
+              wordWrap: 'break-word',
+              wordBreak: 'break-word',
+              whiteSpace: 'pre-wrap',
+              resize: 'vertical',
+              minHeight: '120px'
+            },
+            '& .MuiInputBase-root': {
+              alignItems: 'flex-start'
+            }
+          }}
         />
         
         <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -116,16 +211,32 @@ export default function NoteDialog({
               freeSolo
               options={availableCategories}
               value={categories}
-              onChange={(_, newValue) => setCategories(newValue)}
+              onChange={(_, newValue) => {
+                // Limitar a máximo 15 categorías
+                if (newValue.length <= 15) {
+                  setCategories(newValue);
+                }
+              }}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
                   <Chip
                     variant="outlined"
-                    label={option}
+                    label={option.length > 20 ? `${option.substring(0, 17)}...` : option}
                     color="primary"
                     icon={<CategoryIcon />}
+                    title={option} // Tooltip con el texto completo
                     {...getTagProps({ index })}
                     key={index}
+                    sx={{
+                      maxWidth: '200px',
+                      '& .MuiChip-label': {
+                        wordWrap: 'break-word',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }
+                    }}
                   />
                 ))
               }
@@ -133,7 +244,8 @@ export default function NoteDialog({
                 <TextField
                   {...params}
                   label="Categorías"
-                  placeholder="Agregar categoría..."
+                  placeholder={categories.length >= 15 ? "Máximo 15 categorías" : "Agregar categoría..."}
+                  helperText={`${categories.length}/15 categorías`}
                   InputProps={{
                     ...params.InputProps,
                     startAdornment: (
@@ -156,16 +268,32 @@ export default function NoteDialog({
               freeSolo
               options={availableTags}
               value={tags}
-              onChange={(_, newValue) => setTags(newValue)}
+              onChange={(_, newValue) => {
+                // Limitar a máximo 15 etiquetas
+                if (newValue.length <= 15) {
+                  setTags(newValue);
+                }
+              }}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
                   <Chip
                     variant="outlined"
-                    label={option}
+                    label={option.length > 20 ? `${option.substring(0, 17)}...` : option}
                     color="secondary"
                     icon={<TagIcon />}
+                    title={option} // Tooltip con el texto completo
                     {...getTagProps({ index })}
                     key={index}
+                    sx={{
+                      maxWidth: '200px',
+                      '& .MuiChip-label': {
+                        wordWrap: 'break-word',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                      }
+                    }}
                   />
                 ))
               }
@@ -173,7 +301,8 @@ export default function NoteDialog({
                 <TextField
                   {...params}
                   label="Etiquetas"
-                  placeholder="Agregar etiqueta..."
+                  placeholder={tags.length >= 15 ? "Máximo 15 etiquetas" : "Agregar etiqueta..."}
+                  helperText={`${tags.length}/15 etiquetas`}
                   InputProps={{
                     ...params.InputProps,
                     startAdornment: (
@@ -209,7 +338,16 @@ export default function NoteDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={onSave} variant="contained" disabled={loading}>
+        <Button 
+          onClick={onSave} 
+          variant="contained" 
+          disabled={
+            loading || 
+            title.length === 0 || 
+            title.length > TITLE_MAX_LENGTH || 
+            content.length > CONTENT_MAX_LENGTH
+          }
+        >
           {loading ? 'Guardando...' : 'Guardar'}
         </Button>
       </DialogActions>
